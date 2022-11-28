@@ -8,7 +8,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// const users = [];
+const users = [];
 
 function checksExistsUserAccount(request, response, next) {
   // Complete aqui
@@ -24,11 +24,17 @@ app.post('/users', (request, response) => {
     todos: [],
   };
 
+  users.push(user);
+
   return response.status(201).send(user);
 });
 
-app.get('/todos', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+app.get('/todos', (request, response) => {
+  const { username } = request.headers;
+
+  const user = users.find(user => user.username === username);
+
+  return response.json(user.todos);
 });
 
 app.post('/todos', checksExistsUserAccount, (request, response) => {
