@@ -28,6 +28,10 @@ function checksExistsUserAccount(request, response, next) {
 app.post('/users', (request, response) => {
   const { name, username } = request.body;
 
+  if (users.find(user => user.username === username)) {
+    return response.status(400).json({error: "create a new user when username already exists"})
+  }
+
   const user = {
     id: uuidv4(),
     name,
@@ -65,6 +69,10 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
 app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
   const { user } = request;
   const { title, deadline } = request.body;
+
+  if (!(user.todos.find(todo => todo.id === request.params.id))) {
+    return response.status(404).json({ error: 'Cannot update a non existing todo'});
+  }
   
   user.todos.find(todo => todo.id === request.params.id).title = title;
   user.todos.find(todo => todo.id === request.params.id).deadline = new Date(deadline);
@@ -74,6 +82,10 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
   const { user } = request;
+
+  if (!(user.todos.find(todo => todo.id === request.params.id))) {
+    return response.status(404).json({ error: 'Cannot mark a non existing todo as done'});
+  }
   
   user.todos.find(todo => todo.id === request.params.id).done = true;
 
@@ -87,9 +99,14 @@ app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
     return todo.id === request.params.id;
   });
 
-  user.todos.splice(todoIndex, 1);
+  if (todoIndex === -1) {
+    return response.status(404).json({ error: 'Cannot delete a non existing todo'})
+  }
 
-  return response.status(200).send(user.todos);
+  user.todos.splice(todoIndex, 1);  
+
+  // 204 = resposta sem conteudo
+  return response.status(204).send();
 });
 
 module.exports = app;
