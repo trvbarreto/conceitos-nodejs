@@ -67,7 +67,7 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
   const { title, deadline } = request.body;
   
   user.todos.find(todo => todo.id === request.params.id).title = title;
-  user.todos.find(todo => todo.id === request.params.id).deadline = deadline;
+  user.todos.find(todo => todo.id === request.params.id).deadline = new Date(deadline);
 
   return response.status(200).send(user.todos.find(todo => todo.id === request.params.id));
 });
